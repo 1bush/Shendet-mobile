@@ -1,0 +1,623 @@
+import { useState, useRef, useEffect } from "react";
+
+// ─── Albanian translations ───────────────────────────────────────────────────
+const ALB = {
+  appName: "SHËNDETI",
+  tagline: "Skanoni. Zbuloni. Zgjidhni mirë.",
+  scanTitle: "Skanoni Produktin",
+  barcodeLabel: "Kodi i Barrave",
+  barcodePlaceholder: "p.sh. 3017620422003",
+  searchBtn: "Kërko Produktin",
+  searching: "Duke kërkuar...",
+  notFound: "Produkti nuk u gjet. Provoni një kod tjetër.",
+  error: "Gabim gjatë kërkimit. Kontrolloni lidhjen.",
+  score: "Pikë",
+  nutriscore: "NutriScore",
+  ingredients: "Përbërësit",
+  noIngredients: "Nuk ka të dhëna për përbërësit",
+  nutriFacts: "Vlerat Ushqyese",
+  per100g: "për 100g",
+  energy: "Energji",
+  fat: "Yndyrë",
+  saturatedFat: "Yndyrë e ngopur",
+  carbs: "Karbohidrate",
+  sugars: "Sheqer",
+  fiber: "Fibra",
+  proteins: "Proteina",
+  salt: "Kripë",
+  excellent: "Shkëlqyer",
+  good: "Mirë",
+  mediocre: "Mesatar",
+  poor: "Keq",
+  back: "← Kthehu",
+  novaTitle: "Shkalla NOVA",
+  novaDesc: ["Ushqime të papërpunuara", "Përbërës kuzhine", "Ushqime të përpunuara", "Ultra-të përpunuara"],
+  additivesTitle: "Aditivë",
+  noAdditives: "Pa aditivë të gjetur",
+  scanAnother: "Skano produkt tjetër",
+  exampleTitle: "Provoni me këto kode:",
+  brand: "Prodhuesi",
+  quantity: "Sasia",
+  categories: "Kategoritë",
+  countries: "Vendi",
+  labels: "Etiketat",
+  organic: "BIO / Organik",
+  vegan: "Vegan",
+  vegetarian: "Vegjetarian",
+  glutenFree: "Pa gluten",
+  allergens: "Alergjenet",
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function getScoreColor(score) {
+  if (score >= 75) return { bg: "#27ae60", light: "#d5f5e3", label: ALB.excellent, emoji: "🌿" };
+  if (score >= 50) return { bg: "#f1c40f", light: "#fef9e7", label: ALB.good, emoji: "😊" };
+  if (score >= 25) return { bg: "#e67e22", light: "#fdebd0", label: ALB.mediocre, emoji: "😐" };
+  return { bg: "#e74c3c", light: "#fadbd8", label: ALB.poor, emoji: "⚠️" };
+}
+
+function computeScore(product) {
+  const ns = product.nutriscore_grade;
+  if (ns === "a") return 92;
+  if (ns === "b") return 72;
+  if (ns === "c") return 50;
+  if (ns === "d") return 28;
+  if (ns === "e") return 10;
+  // fallback from nutriments
+  const n = product.nutriments || {};
+  let score = 60;
+  if (n["sugars_100g"] > 15) score -= 15;
+  if (n["saturated-fat_100g"] > 5) score -= 15;
+  if (n["salt_100g"] > 1.5) score -= 10;
+  if (n["fiber_100g"] > 3) score += 10;
+  if (n["proteins_100g"] > 8) score += 8;
+  return Math.max(5, Math.min(95, score));
+}
+
+function NutriBadge({ grade }) {
+  const colors = { a: "#27ae60", b: "#8bc34a", c: "#ffc107", d: "#ff9800", e: "#f44336" };
+  if (!grade || grade === "not-applicable") return null;
+  return (
+    <span style={{
+      background: colors[grade] || "#999",
+      color: "#fff",
+      fontFamily: "'Space Grotesk', sans-serif",
+      fontWeight: 800,
+      fontSize: 13,
+      padding: "2px 10px",
+      borderRadius: 20,
+      letterSpacing: 1,
+      textTransform: "uppercase",
+    }}>
+      NutriScore {grade?.toUpperCase()}
+    </span>
+  );
+}
+
+function ScoreRing({ score }) {
+  const color = getScoreColor(score);
+  const r = 52;
+  const circ = 2 * Math.PI * r;
+  const dash = (score / 100) * circ;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+      <div style={{ position: "relative", width: 130, height: 130 }}>
+        <svg width="130" height="130" style={{ transform: "rotate(-90deg)" }}>
+          <circle cx="65" cy="65" r={r} fill="none" stroke="#eee" strokeWidth="10" />
+          <circle
+            cx="65" cy="65" r={r} fill="none"
+            stroke={color.bg} strokeWidth="10"
+            strokeDasharray={`${dash} ${circ}`}
+            strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 1.2s cubic-bezier(.4,0,.2,1)" }}
+          />
+        </svg>
+        <div style={{
+          position: "absolute", inset: 0, display: "flex",
+          flexDirection: "column", alignItems: "center", justifyContent: "center",
+        }}>
+          <span style={{ fontSize: 34, fontWeight: 900, color: color.bg, fontFamily: "'Space Grotesk', sans-serif", lineHeight: 1 }}>
+            {score}
+          </span>
+          <span style={{ fontSize: 11, color: "#888", fontFamily: "sans-serif" }}>/100</span>
+        </div>
+      </div>
+      <span style={{
+        background: color.bg, color: "#fff", borderRadius: 20,
+        padding: "4px 16px", fontSize: 13, fontWeight: 700,
+        fontFamily: "'Space Grotesk', sans-serif", letterSpacing: 0.5,
+      }}>
+        {color.emoji} {color.label}
+      </span>
+    </div>
+  );
+}
+
+function NutrientRow({ label, value, unit, warn }) {
+  return (
+    <div style={{
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "8px 0", borderBottom: "1px solid #f0f0f0",
+    }}>
+      <span style={{ fontSize: 14, color: "#555", fontFamily: "sans-serif" }}>{label}</span>
+      <span style={{
+        fontSize: 14, fontWeight: 700,
+        color: warn ? "#e74c3c" : "#222",
+        fontFamily: "'Space Grotesk', sans-serif",
+      }}>
+        {value !== undefined && value !== null ? `${parseFloat(value).toFixed(1)} ${unit}` : "—"}
+      </span>
+    </div>
+  );
+}
+
+function AdditiveBadge({ additive }) {
+  const risk = additive.toLowerCase().includes("e1") || additive.toLowerCase().includes("e2") ? "orange" : "#888";
+  return (
+    <span style={{
+      display: "inline-block", background: "#f5f5f5", border: `1px solid #ddd`,
+      borderRadius: 8, padding: "3px 10px", fontSize: 12,
+      fontFamily: "monospace", color: "#555", margin: "3px",
+    }}>
+      {additive}
+    </span>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+export default function YukaShqip() {
+  const [barcode, setBarcode] = useState("");
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [view, setView] = useState("home"); // home | result
+  const [score, setScore] = useState(0);
+  const [animScore, setAnimScore] = useState(0);
+  const inputRef = useRef();
+
+  const examples = [
+    { code: "3017620422003", name: "Nutella 400g" },
+    { code: "5449000000996", name: "Coca-Cola 330ml" },
+    { code: "7613035995000", name: "Nespresso" },
+    { code: "3229820129488", name: "Evian 1.5L" },
+    { code: "3564700011005", name: "Président Beurre" },
+  ];
+
+  async function search(code) {
+    const bcd = (code || barcode).trim();
+    if (!bcd) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${bcd}.json`);
+      const data = await res.json();
+      if (data.status === 1 && data.product) {
+        const p = data.product;
+        const s = computeScore(p);
+        setProduct(p);
+        setScore(s);
+        setAnimScore(0);
+        setView("result");
+        setTimeout(() => setAnimScore(s), 100);
+      } else {
+        setError(ALB.notFound);
+      }
+    } catch {
+      setError(ALB.error);
+    }
+    setLoading(false);
+  }
+
+  function getAdditives(p) {
+    return (p.additives_tags || []).map(a => a.replace("en:", "").toUpperCase());
+  }
+
+  function getLabels(p) {
+    const tags = (p.labels_tags || []).map(l => l.replace("en:", ""));
+    return {
+      organic: tags.some(t => t.includes("organic") || t.includes("bio")),
+      vegan: tags.some(t => t.includes("vegan")),
+      vegetarian: tags.some(t => t.includes("vegetarian")),
+      glutenFree: tags.some(t => t.includes("gluten-free")),
+    };
+  }
+
+  const n = product?.nutriments || {};
+  const labels = product ? getLabels(product) : {};
+  const additives = product ? getAdditives(product) : [];
+  const scoreColor = getScoreColor(animScore);
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: view === "home"
+        ? "linear-gradient(135deg, #e8f8f0 0%, #f0faf5 50%, #fff 100%)"
+        : scoreColor.light,
+      fontFamily: "sans-serif",
+      transition: "background 0.6s ease",
+    }}>
+      {/* Google Fonts */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        input:focus { outline: none; }
+        button:active { transform: scale(0.97); }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.04); }
+        }
+        .card { animation: slideUp 0.4s cubic-bezier(.4,0,.2,1) both; }
+      `}</style>
+
+      <div style={{ maxWidth: 430, margin: "0 auto", padding: "0 0 40px" }}>
+
+        {/* ── HOME ── */}
+        {view === "home" && (
+          <>
+            {/* Header */}
+            <div style={{
+              background: "linear-gradient(135deg, #1a7a4a, #27ae60)",
+              padding: "48px 28px 36px",
+              borderRadius: "0 0 32px 32px",
+              color: "#fff",
+              boxShadow: "0 8px 32px rgba(39,174,96,0.3)",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <span style={{ fontSize: 36 }}>🌿</span>
+                <span style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 900, fontSize: 28, letterSpacing: -1,
+                }}>
+                  {ALB.appName}
+                </span>
+              </div>
+              <p style={{ opacity: 0.85, fontSize: 15, fontWeight: 400 }}>{ALB.tagline}</p>
+            </div>
+
+            {/* Search card */}
+            <div className="card" style={{
+              margin: "24px 16px",
+              background: "#fff",
+              borderRadius: 20,
+              padding: 24,
+              boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+            }}>
+              <h2 style={{
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 800, fontSize: 18, color: "#1a2e1a", marginBottom: 4,
+              }}>
+                📦 {ALB.scanTitle}
+              </h2>
+              <p style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>
+                Shkruani kodin e barrave të produktit
+              </p>
+
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <span style={{
+                  position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                  fontSize: 18, pointerEvents: "none",
+                }}>🔍</span>
+                <input
+                  ref={inputRef}
+                  value={barcode}
+                  onChange={e => setBarcode(e.target.value.replace(/\D/g, ""))}
+                  onKeyDown={e => e.key === "Enter" && search()}
+                  placeholder={ALB.barcodePlaceholder}
+                  inputMode="numeric"
+                  style={{
+                    width: "100%", padding: "14px 14px 14px 44px",
+                    border: "2px solid #e8f5e9", borderRadius: 14,
+                    fontSize: 16, fontFamily: "monospace", letterSpacing: 2,
+                    background: "#f8fff9", color: "#1a2e1a",
+                    transition: "border-color 0.2s",
+                  }}
+                  onFocus={e => e.target.style.borderColor = "#27ae60"}
+                  onBlur={e => e.target.style.borderColor = "#e8f5e9"}
+                />
+              </div>
+
+              <button
+                onClick={() => search()}
+                disabled={loading || !barcode}
+                style={{
+                  width: "100%",
+                  padding: "15px",
+                  background: loading || !barcode
+                    ? "#ccc"
+                    : "linear-gradient(135deg, #27ae60, #1a7a4a)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 14,
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 800,
+                  fontSize: 16,
+                  cursor: loading || !barcode ? "not-allowed" : "pointer",
+                  transition: "all 0.2s",
+                  boxShadow: loading || !barcode ? "none" : "0 4px 16px rgba(39,174,96,0.35)",
+                }}
+              >
+                {loading ? "⏳ " + ALB.searching : "🌿 " + ALB.searchBtn}
+              </button>
+
+              {error && (
+                <div style={{
+                  marginTop: 12, padding: "10px 14px",
+                  background: "#fdf2f2", border: "1px solid #f5c6cb",
+                  borderRadius: 10, color: "#c0392b", fontSize: 13,
+                }}>
+                  ⚠️ {error}
+                </div>
+              )}
+            </div>
+
+            {/* Examples */}
+            <div className="card" style={{ margin: "0 16px" }}>
+              <p style={{ fontSize: 13, color: "#888", marginBottom: 10, fontWeight: 600 }}>
+                💡 {ALB.exampleTitle}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {examples.map(ex => (
+                  <button
+                    key={ex.code}
+                    onClick={() => { setBarcode(ex.code); search(ex.code); }}
+                    style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "11px 16px",
+                      background: "#f8fff9",
+                      border: "1.5px solid #e8f5e9",
+                      borderRadius: 12, cursor: "pointer",
+                      transition: "all 0.15s",
+                      fontFamily: "sans-serif",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = "#e8f5e9";
+                      e.currentTarget.style.borderColor = "#27ae60";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = "#f8fff9";
+                      e.currentTarget.style.borderColor = "#e8f5e9";
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, color: "#1a2e1a", fontSize: 14 }}>{ex.name}</span>
+                    <span style={{ fontFamily: "monospace", color: "#888", fontSize: 12 }}>{ex.code}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── RESULT ── */}
+        {view === "result" && product && (
+          <>
+            {/* Top bar */}
+            <div style={{
+              background: scoreColor.bg,
+              padding: "16px 20px 24px",
+              borderRadius: "0 0 28px 28px",
+              color: "#fff",
+              boxShadow: `0 6px 24px ${scoreColor.bg}55`,
+            }}>
+              <button
+                onClick={() => { setView("home"); setProduct(null); setBarcode(""); }}
+                style={{
+                  background: "rgba(255,255,255,0.2)", border: "none",
+                  color: "#fff", padding: "6px 14px", borderRadius: 20,
+                  cursor: "pointer", fontSize: 13, fontWeight: 600,
+                  marginBottom: 14, fontFamily: "'Space Grotesk', sans-serif",
+                }}
+              >
+                {ALB.back}
+              </button>
+
+              <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                {/* Product image */}
+                <div style={{
+                  width: 80, height: 80, borderRadius: 16,
+                  background: "rgba(255,255,255,0.25)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  overflow: "hidden", flexShrink: 0,
+                  border: "2px solid rgba(255,255,255,0.4)",
+                }}>
+                  {product.image_small_url
+                    ? <img src={product.image_small_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <span style={{ fontSize: 32 }}>📦</span>
+                  }
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h1 style={{
+                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontWeight: 900, fontSize: 18, lineHeight: 1.2,
+                    color: "#fff", marginBottom: 4,
+                  }}>
+                    {product.product_name || product.product_name_en || "Produkt i panjohur"}
+                  </h1>
+                  {product.brands && (
+                    <p style={{ fontSize: 13, opacity: 0.85 }}>{product.brands}</p>
+                  )}
+                  {product.quantity && (
+                    <p style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{product.quantity}</p>
+                  )}
+                  <div style={{ marginTop: 8 }}>
+                    <NutriBadge grade={product.nutriscore_grade} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Score card */}
+            <div className="card" style={{
+              margin: "16px 16px 12px",
+              background: "#fff",
+              borderRadius: 20,
+              padding: "24px 20px",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 32,
+            }}>
+              <ScoreRing score={animScore} />
+              <div>
+                {[
+                  { color: "#27ae60", label: ALB.excellent, range: "75–100" },
+                  { color: "#f1c40f", label: ALB.good, range: "50–74" },
+                  { color: "#e67e22", label: ALB.mediocre, range: "25–49" },
+                  { color: "#e74c3c", label: ALB.poor, range: "0–24" },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: "#666" }}>{item.label}</span>
+                    <span style={{ fontSize: 11, color: "#aaa", marginLeft: "auto" }}>{item.range}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Labels / badges */}
+            {(labels.organic || labels.vegan || labels.vegetarian || labels.glutenFree) && (
+              <div className="card" style={{
+                margin: "0 16px 12px",
+                background: "#fff", borderRadius: 16,
+                padding: "14px 16px",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+                display: "flex", flexWrap: "wrap", gap: 8,
+              }}>
+                {labels.organic && <span style={badgeStyle("#27ae60")}>🌱 {ALB.organic}</span>}
+                {labels.vegan && <span style={badgeStyle("#2980b9")}>🌍 {ALB.vegan}</span>}
+                {labels.vegetarian && <span style={badgeStyle("#8e44ad")}>🥦 {ALB.vegetarian}</span>}
+                {labels.glutenFree && <span style={badgeStyle("#e67e22")}>✅ {ALB.glutenFree}</span>}
+              </div>
+            )}
+
+            {/* Nutritional values */}
+            <div className="card" style={cardStyle}>
+              <h3 style={sectionTitle}>🥗 {ALB.nutriFacts} <span style={{ fontSize: 12, fontWeight: 400, color: "#aaa" }}>({ALB.per100g})</span></h3>
+              <NutrientRow label={ALB.energy} value={n["energy-kcal_100g"]} unit="kcal" />
+              <NutrientRow label={ALB.fat} value={n["fat_100g"]} unit="g" warn={n["fat_100g"] > 20} />
+              <NutrientRow label={ALB.saturatedFat} value={n["saturated-fat_100g"]} unit="g" warn={n["saturated-fat_100g"] > 5} />
+              <NutrientRow label={ALB.carbs} value={n["carbohydrates_100g"]} unit="g" />
+              <NutrientRow label={ALB.sugars} value={n["sugars_100g"]} unit="g" warn={n["sugars_100g"] > 12} />
+              <NutrientRow label={ALB.fiber} value={n["fiber_100g"]} unit="g" />
+              <NutrientRow label={ALB.proteins} value={n["proteins_100g"]} unit="g" />
+              <NutrientRow label={ALB.salt} value={n["salt_100g"]} unit="g" warn={n["salt_100g"] > 1.5} />
+            </div>
+
+            {/* NOVA */}
+            {product.nova_group && (
+              <div className="card" style={cardStyle}>
+                <h3 style={sectionTitle}>🧪 {ALB.novaTitle}</h3>
+                {[1, 2, 3, 4].map(g => (
+                  <div key={g} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "8px 0", borderBottom: g < 4 ? "1px solid #f0f0f0" : "none",
+                    opacity: product.nova_group === g ? 1 : 0.4,
+                  }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                      background: ["#27ae60", "#8bc34a", "#ff9800", "#f44336"][g - 1],
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "#fff", fontWeight: 900, fontSize: 14,
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      boxShadow: product.nova_group === g ? "0 2px 8px rgba(0,0,0,0.2)" : "none",
+                    }}>
+                      {g}
+                    </div>
+                    <span style={{ fontSize: 13, color: product.nova_group === g ? "#1a2e1a" : "#999" }}>
+                      {ALB.novaDesc[g - 1]}
+                    </span>
+                    {product.nova_group === g && (
+                      <span style={{ marginLeft: "auto", fontSize: 16 }}>✓</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Ingredients */}
+            <div className="card" style={cardStyle}>
+              <h3 style={sectionTitle}>📋 {ALB.ingredients}</h3>
+              <p style={{
+                fontSize: 13, color: "#555", lineHeight: 1.7,
+                fontFamily: "sans-serif",
+              }}>
+                {product.ingredients_text_en || product.ingredients_text || ALB.noIngredients}
+              </p>
+            </div>
+
+            {/* Allergens */}
+            {product.allergens_from_ingredients && (
+              <div className="card" style={{ ...cardStyle, background: "#fff8f8", border: "1px solid #fce4e4" }}>
+                <h3 style={{ ...sectionTitle, color: "#c0392b" }}>⚠️ {ALB.allergens}</h3>
+                <p style={{ fontSize: 13, color: "#c0392b" }}>
+                  {product.allergens_from_ingredients}
+                </p>
+              </div>
+            )}
+
+            {/* Additives */}
+            <div className="card" style={cardStyle}>
+              <h3 style={sectionTitle}>🧬 {ALB.additivesTitle}</h3>
+              {additives.length > 0
+                ? <div style={{ marginTop: 4 }}>{additives.map(a => <AdditiveBadge key={a} additive={a} />)}</div>
+                : <p style={{ fontSize: 13, color: "#27ae60" }}>✅ {ALB.noAdditives}</p>
+              }
+            </div>
+
+            {/* Scan another */}
+            <div style={{ padding: "0 16px" }}>
+              <button
+                onClick={() => { setView("home"); setProduct(null); setBarcode(""); setAnimScore(0); }}
+                style={{
+                  width: "100%", padding: 16,
+                  background: "linear-gradient(135deg, #27ae60, #1a7a4a)",
+                  color: "#fff", border: "none", borderRadius: 16,
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 800, fontSize: 15, cursor: "pointer",
+                  boxShadow: "0 4px 16px rgba(39,174,96,0.3)",
+                }}
+              >
+                🔍 {ALB.scanAnother}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Shared styles ────────────────────────────────────────────────────────────
+const cardStyle = {
+  margin: "0 16px 12px",
+  background: "#fff",
+  borderRadius: 16,
+  padding: "16px 18px",
+  boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+};
+
+const sectionTitle = {
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontWeight: 800, fontSize: 15,
+  color: "#1a2e1a", marginBottom: 12,
+};
+
+function badgeStyle(color) {
+  return {
+    background: color + "18",
+    border: `1.5px solid ${color}44`,
+    color: color,
+    borderRadius: 20,
+    padding: "4px 12px",
+    fontSize: 12,
+    fontWeight: 700,
+    fontFamily: "'Space Grotesk', sans-serif",
+  };
+}
