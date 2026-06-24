@@ -1,0 +1,242 @@
+import React, { useState } from 'react';
+import {
+  View, Text, TouchableOpacity, Image, StyleSheet,
+  ScrollView, ActivityIndicator, Alert, SafeAreaView,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
+
+interface ProductResult {
+  emri: string;
+  kategoria: string;
+  skor: number;
+  vleresim: string;
+  shenim: string;
+}
+
+interface ReceiptAnalysis {
+  produktet: ProductResult[];
+  skor_total: number;
+  permbledhje: string;
+  keshilla: string;
+}
+
+const SCORE_COLOR = (s: number) =>
+  s >= 80 ? '#1D9E75' : s >= 60 ? '#85C440' : s >= 40 ? '#F59E0B' : '#EF4444';
+
+const SCORE_LABEL = (s: number) =>
+  s >= 80 ? 'Shumë mirë' : s >= 60 ? 'Mirë' : s >= 40 ? 'Mesatar' : 'I dobët';
+
+export default function SkanimFature() {
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ReceiptAnalysis | null>(null);
+
+  const pickImage = async (useCamera: boolean) => {
+    const { status } = useCamera
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Leje e nevojshme', 'Duhet të japësh leje për ' + (useCamera ? 'kamerën' : 'galerian'));
+      return;
+    }
+    const result = useCamera
+      ? await ImagePicker.launchCameraAsync({ base64: true, quality: 0.7 })
+      : await ImagePicker.launchImageLibraryAsync({ base64: true, quality: 0.7 });
+
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setImage(asset.uri);
+      setResult(null);
+      analyzeReceipt(asset.base64!, asset.mimeType || 'image/jpeg');
+    }
+  };
+
+  const analyzeReceipt = async (base64: string, mimeType: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 2048,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: mimeType, data: base64 },
+              },
+              {
+                type: 'text',
+                text: `Analizoje këtë faturë supermarketi. Identifiko produktet ushqimore dhe jep vlerësim shëndetësor.
+
+Kthe VETËM JSON (pa asgjë tjetër) në këtë format:
+{
+  "produktet": [
+    {
+      "emri": "Emri i produktit",
+      "kategoria": "Ushqim/Pije/Ëmbëlsirë/etj",
+      "skor": 75,
+      "vleresim": "Mirë",
+      "shenim": "Arsyeja e shkurtër e skorit"
+    }
+  ],
+  "skor_total": 68,
+  "permbledhje": "Vlerësim i përgjithshëm i blerjes",
+  "keshilla": "Këshillë konkrete për blerjen tjetër"
+}
+
+Skor: 0-100 (100=shumë shëndetshëm, 0=shumë jo-shëndetshëm).
+Nëse nuk gjen produkte ushqimore, kthe "produktet": [].`,
+              },
+            ],
+          }],
+        }),
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '{}';
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed: ReceiptAnalysis = JSON.parse(clean);
+      setResult(parsed);
+    } catch (e) {
+      Alert.alert('Gabim', 'Nuk munda të analizoj faturën. Provo me një foto më të qartë.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Skanim Faturash</Text>
+          <Text style={styles.sub}>Foto faturën → analizë e plotë shëndetësore</Text>
+        </View>
+
+        {!image ? (
+          <View style={styles.uploadArea}>
+            <Ionicons name="receipt-outline" size={64} color="#D1FAE5" />
+            <Text style={styles.uploadTitle}>Ngarko faturën tënde</Text>
+            <Text style={styles.uploadSub}>Analizojmë çdo produkt dhe japim skor shëndetësor</Text>
+            <View style={styles.btnRow}>
+              <TouchableOpacity style={styles.pickBtn} onPress={() => pickImage(true)}>
+                <Ionicons name="camera-outline" size={20} color="white" />
+                <Text style={styles.pickBtnText}>Kamera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.pickBtn, styles.pickBtnOutline]} onPress={() => pickImage(false)}>
+                <Ionicons name="images-outline" size={20} color="#1D9E75" />
+                <Text style={[styles.pickBtnText, { color: '#1D9E75' }]}>Galeria</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <View>
+            <View style={styles.imageContainer}>
+              <Image source={{ uri: image }} style={styles.receiptImg} resizeMode="contain" />
+              <TouchableOpacity style={styles.retakeBtn} onPress={() => { setImage(null); setResult(null); }}>
+                <Ionicons name="refresh" size={16} color="white" />
+                <Text style={styles.retakeTxt}>Ndrysho foton</Text>
+              </TouchableOpacity>
+            </View>
+
+            {loading && (
+              <View style={styles.loadingBox}>
+                <ActivityIndicator size="large" color="#1D9E75" />
+                <Text style={styles.loadingTxt}>Duke analizuar faturën...</Text>
+              </View>
+            )}
+
+            {result && (
+              <View style={styles.results}>
+                {/* Total score */}
+                <View style={[styles.totalCard, { borderColor: SCORE_COLOR(result.skor_total) }]}>
+                  <Text style={styles.totalLabel}>Skor i blerjes</Text>
+                  <Text style={[styles.totalScore, { color: SCORE_COLOR(result.skor_total) }]}>
+                    {result.skor_total}/100
+                  </Text>
+                  <Text style={styles.totalDesc}>{result.permbledhje}</Text>
+                </View>
+
+                {/* Products */}
+                {result.produktet.length > 0 && (
+                  <View>
+                    <Text style={styles.sectionTitle}>Produktet ({result.produktet.length})</Text>
+                    {result.produktet.map((p, i) => (
+                      <View key={i} style={styles.productCard}>
+                        <View style={styles.productRow}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.productName}>{p.emri}</Text>
+                            <Text style={styles.productCat}>{p.kategoria}</Text>
+                          </View>
+                          <View style={[styles.scoreBadge, { backgroundColor: SCORE_COLOR(p.skor) + '20' }]}>
+                            <Text style={[styles.scoreBadgeText, { color: SCORE_COLOR(p.skor) }]}>
+                              {p.skor}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={styles.productNote}>{p.shenim}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Tip */}
+                <View style={styles.tipCard}>
+                  <Ionicons name="bulb-outline" size={18} color="#1D9E75" />
+                  <Text style={styles.tipText}>{result.keshilla}</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  header: { padding: 20, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  title: { fontSize: 22, fontWeight: '700', color: '#111827' },
+  sub: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+  uploadArea: { margin: 20, backgroundColor: 'white', borderRadius: 20, padding: 32,
+    alignItems: 'center', borderWidth: 2, borderColor: '#D1FAE5', borderStyle: 'dashed' },
+  uploadTitle: { fontSize: 18, fontWeight: '600', color: '#111827', marginTop: 16 },
+  uploadSub: { fontSize: 13, color: '#6B7280', textAlign: 'center', marginTop: 8, marginBottom: 24 },
+  btnRow: { flexDirection: 'row', gap: 12 },
+  pickBtn: { flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#1D9E75', borderRadius: 12, paddingHorizontal: 20, paddingVertical: 12 },
+  pickBtnOutline: { backgroundColor: 'white', borderWidth: 1.5, borderColor: '#1D9E75' },
+  pickBtnText: { color: 'white', fontWeight: '600', fontSize: 14 },
+  imageContainer: { margin: 16 },
+  receiptImg: { width: '100%', height: 220, borderRadius: 16, backgroundColor: '#F3F4F6' },
+  retakeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'center',
+    marginTop: 10, backgroundColor: '#6B7280', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+  retakeTxt: { color: 'white', fontSize: 13 },
+  loadingBox: { alignItems: 'center', padding: 32, gap: 12 },
+  loadingTxt: { color: '#6B7280', fontSize: 14 },
+  results: { paddingHorizontal: 16, paddingBottom: 32 },
+  totalCard: { backgroundColor: 'white', borderRadius: 16, padding: 20, alignItems: 'center',
+    borderWidth: 2, marginBottom: 16 },
+  totalLabel: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
+  totalScore: { fontSize: 48, fontWeight: '800', marginVertical: 4 },
+  totalDesc: { fontSize: 14, color: '#374151', textAlign: 'center' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 10 },
+  productCard: { backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 8,
+    borderWidth: 1, borderColor: '#E5E7EB' },
+  productRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  productName: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  productCat: { fontSize: 12, color: '#6B7280' },
+  scoreBadge: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  scoreBadgeText: { fontSize: 16, fontWeight: '700' },
+  productNote: { fontSize: 12, color: '#6B7280', lineHeight: 18 },
+  tipCard: { flexDirection: 'row', gap: 10, backgroundColor: '#ECFDF5', borderRadius: 12,
+    padding: 14, marginTop: 8, alignItems: 'flex-start' },
+  tipText: { flex: 1, fontSize: 13, color: '#065F46', lineHeight: 20 },
+});
