@@ -21,6 +21,8 @@ data class OFFProduct(
     @Json(name = "nutriscore_grade") val nutriscore: String?,
     @Json(name = "nutrition_grades") val nutritionGrades: String?, // Alternative field name
     @Json(name = "image_url") val imageUrl: String?,
+    @Json(name = "image_front_url") val imageFrontUrl: String?,
+    @Json(name = "image_small_url") val imageSmallUrl: String?,
     @Json(name = "brands") val brands: String?,
     @Json(name = "categories") val categories: String?,
     @Json(name = "additives_tags") val additives: List<String>?,

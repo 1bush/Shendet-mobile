@@ -120,7 +120,8 @@ class UnifiedProductRepository(
         val brand: String?,
         val ingredients: String?,
         val nutrients: String?,   // formatted string passed to AI
-        val source: String
+        val source: String,
+        val imageUrl: String? = null
     )
 
     // Ã¢â€â‚¬Ã¢â€â‚¬ Multi-database lookup Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
@@ -130,7 +131,7 @@ class UnifiedProductRepository(
         if (isBarcode) {
             try {
                 val p = offReadApi.getProduct(barcode).product
-                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, formatOFFNutrients(p.nutriments), "OpenFoodFacts")
+                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, formatOFFNutrients(p.nutriments), "OpenFoodFacts", p.productImage())
             } catch (_: Exception) { Log.d("UnifiedRepo", "OFF barcode failed") }
             // Yuka is the second provider; connect an authorized Yuka endpoint here.
             if (usdaApiKey.isNotBlank()) {
@@ -145,12 +146,12 @@ class UnifiedProductRepository(
             // 4. OpenBeautyFacts (beauty database)
             try {
                 val p = obfReadApi.getProduct(barcode).product
-                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, null, "OpenBeautyFacts")
+                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, null, "OpenBeautyFacts", p.productImage())
             } catch (_: Exception) { Log.d("UnifiedRepo", "OBF barcode failed") }
         } else {
             try {
                 val p = offReadApi.searchProducts(barcode).products?.firstOrNull()
-                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, formatOFFNutrients(p.nutriments), "OpenFoodFacts")
+                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, formatOFFNutrients(p.nutriments), "OpenFoodFacts", p.productImage())
             } catch (_: Exception) { Log.d("UnifiedRepo", "OFF text search failed") }
             if (usdaApiKey.isNotBlank()) {
                 try {
@@ -162,11 +163,13 @@ class UnifiedProductRepository(
             // 4. OpenBeautyFacts (beauty database)
             try {
                 val p = obfReadApi.searchProducts(barcode).products?.firstOrNull()
-                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, null, "OpenBeautyFacts")
+                if (p?.productName != null) return LookupResult(p.productName, p.brands, p.ingredients, null, "OpenBeautyFacts", p.productImage())
             } catch (_: Exception) { Log.d("UnifiedRepo", "OBF text search failed") }
         }
         return null
     }
+
+    private fun OFFProduct.productImage(): String? = imageUrl ?: imageFrontUrl ?: imageSmallUrl
 
     // Ã¢â€â‚¬Ã¢â€â‚¬ Nutrient formatters Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
@@ -228,10 +231,8 @@ class UnifiedProductRepository(
         val lookup = lookupProduct(barcode, target)
 
         val categoryRequirement = getCategoryRequirement(target)
-                ?.take(20)
-                ?.mapNotNull { nocoDbRepository?.findAllergen(nocoIngredientName(it)) }
-                .orEmpty()
-            buildString {
+        val systemPrompt = getSystemPrompt(categoryRequirement)
+        val queryText = if (lookup != null) buildString {
                 append("Analizo kÃƒÂ«tÃƒÂ« produkt. Burimi: ${lookup.source}. ")
                 append("Emri: ${lookup.name}")
                 lookup.brand?.let { append(", Brendi: $it") }
@@ -254,7 +255,28 @@ class UnifiedProductRepository(
             model = ollamaModel,
             messages = listOf(OllamaMessage("system", systemPrompt), OllamaMessage("user", queryText))
         )
-        runOllama(request)
+        val aiResult = runOllama(request)
+        if (aiResult.isSuccess) {
+            aiResult.map { it.copy(productImageUrl = lookup?.imageUrl) }
+        } else if (lookup != null) {
+            // A database match remains useful even when Ollama is offline.
+            Result.success(
+                ProductAnalysis(
+                    name = lookup.name,
+                    score = 0,
+                    grade = "N/A",
+                    healthImpact = "Produkti u gjet në ${lookup.source}. Analiza AI nuk është e disponueshme tani.",
+                    positives = emptyList(),
+                    negatives = emptyList(),
+                    vitamins = emptyList(),
+                    minerals = emptyList(),
+                    ingredientsList = emptyList(),
+                    productImageUrl = lookup.imageUrl
+                )
+            )
+        } else {
+            aiResult
+        }
     }
 
     suspend fun analyzeImages(productBitmap: Bitmap?, ingredientsBitmap: Bitmap?, target: String = "food"): Result<ProductAnalysis> = withContext(Dispatchers.IO) {

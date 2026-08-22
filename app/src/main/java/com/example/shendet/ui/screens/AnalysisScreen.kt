@@ -81,7 +81,8 @@ fun AnalysisScreen(
                     vitamins = cachedScan.vitamins.split(",").filter { it.isNotBlank() },
                     minerals = cachedScan.minerals.split(",").filter { it.isNotBlank() },
                     alternatives = emptyList(),
-                    ingredientsList = emptyList()
+                    ingredientsList = emptyList(),
+                    productImageUrl = null
                 )
                 isOfflineMode = true
                 isLoading = false
@@ -239,19 +240,28 @@ fun AnalysisContent(
     }
 
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        if (capturedBitmap != null) {
+        if (capturedBitmap != null || analysis.productImageUrl != null) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth().height(250.dp),
                     shape = RoundedCornerShape(24.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    androidx.compose.foundation.Image(
-                        bitmap = capturedBitmap.asImageBitmap(),
-                        contentDescription = "Foto e produktit",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                    )
+                    if (capturedBitmap != null) {
+                        androidx.compose.foundation.Image(
+                            bitmap = capturedBitmap.asImageBitmap(),
+                            contentDescription = "Foto e produktit",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                    } else {
+                        AsyncImage(
+                            model = analysis.productImageUrl,
+                            contentDescription = "Foto e produktit nga databaza",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                    }
                 }
             }
         }

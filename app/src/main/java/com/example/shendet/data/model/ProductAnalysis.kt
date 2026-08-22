@@ -14,7 +14,8 @@ data class ProductAnalysis(
     val vitamins: List<String>,
     val minerals: List<String>,
     val alternatives: List<String> = emptyList(),
-    val ingredientsList: List<IngredientDetail> = emptyList() // Added detailed ingredients
+    val ingredientsList: List<IngredientDetail> = emptyList(),
+    val productImageUrl: String? = null
 )
 
 @JsonClass(generateAdapter = true)
