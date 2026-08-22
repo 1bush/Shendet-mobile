@@ -19,7 +19,7 @@
 
 #### Hapi 1: Hap Android Studio
 1. Lëshoi Android Studio
-2. Hap projektin `SHENDET2`
+2. Hap projektin `SHENDETI-IM`
 3. Prit deri të ngarkojë
 
 #### Hapi 2: Prova e Ndërtimit
@@ -38,7 +38,7 @@
 #### Hapi 4: Gjen APK-un
 ```
 📁 Vendndodhja:
-   SHENDET2/
+   SHENDETI-IM/
    └─ app/
       └─ release/  ← ← ← APK këtu
          └─ app-release.apk (APK Juaj)
@@ -50,7 +50,7 @@
 
 ```powershell
 # Hyp në direktoriumin e projektit
-cd "C:\Users\roven\AndroidStudioProjects\SHENDET2"
+cd "C:\Users\roven\AndroidStudioProjects\SHENDETI-IM"
 
 # Ndërto APK (Debug)
 .\gradlew.bat assembleDebug
@@ -114,7 +114,7 @@ Release: ⚠️ Përdor debug key (ndrysho për production)
 ### Krijoni Keystore
 ```powershell
 # Hap PowerShell Command Prompt
-cd "C:\Users\roven\AndroidStudioProjects\SHENDET2"
+cd "C:\Users\roven\AndroidStudioProjects\SHENDETI-IM"
 
 # Krijo keystore (nëse nuk e ke)
 keytool -genkey -v -keystore shendet.keystore ^
@@ -321,7 +321,7 @@ Përpara se të dërgosh:
 **Pas ndërtimit të suksesshëm:**
 
 ```
-C:\Users\roven\AndroidStudioProjects\SHENDET2\
+C:\Users\roven\AndroidStudioProjects\SHENDETI-IM\
 ├── app\build\outputs\apk\
 │   ├── debug\
 │   │   └── app-debug.apk ← Debug version
@@ -341,7 +341,7 @@ Në çdo pyetje ose gabim, më shkruaj direktisht.
 
 ---
 
-*APK Build Guide - SHENDET v1.0*
+*APK Build Guide - SHENDETI-IM v1.0*
 *Data: 14 Korrik 2026*
 *Status: GATI PËR NDËRTIM ✅*
 

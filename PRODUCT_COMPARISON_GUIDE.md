@@ -3,7 +3,7 @@ te
 
 ## Overview
 
-This feature enables the SHENDET app to analyze products using Groq AI and compare the results with OpenFoodFacts data to ensure data concordance and identify discrepancies.
+This feature enables the SHENDETI-IM app to analyze products using Groq AI and compare the results with OpenFoodFacts data to ensure data concordance and identify discrepancies.
 
 ## Features
 

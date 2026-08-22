@@ -6,7 +6,7 @@
 
 ```
 1. Hap Android Studio
-2. Projekti: SHENDET2
+2. Projekti: SHENDETI-IM
 3. Build → Build Bundle(s)/APK(s) → Build APK(s)
 4. Prit 2-5 minuta
 5. ✓ APK Gati! → app/release/app-release.apk
@@ -15,7 +15,7 @@
 ### Terminal Komanda (Më i shpejtë)
 
 ```powershell
-cd "C:\Users\roven\AndroidStudioProjects\SHENDET2"
+cd "C:\Users\roven\AndroidStudioProjects\SHENDETI-IM"
 .\gradlew.bat assembleRelease
 ```
 
@@ -26,7 +26,7 @@ cd "C:\Users\roven\AndroidStudioProjects\SHENDET2"
 ## 📍 VENDNDODHJA E APK
 
 ```
-C:\Users\roven\AndroidStudioProjects\SHENDET2\
+C:\Users\roven\AndroidStudioProjects\SHENDETI-IM\
 └── app\
     └── build\
         └── outputs\

@@ -21,7 +21,7 @@
 
 #### Step 1: Open Android Studio
 1. Launch Android Studio
-2. Open project `SHENDET2`
+2. Open project `SHENDETI-IM`
 3. Wait for indexing to complete
 
 #### Step 2: Build Project
@@ -40,7 +40,7 @@
 #### Step 4: Find APK
 ```
 📁 Location:
-   SHENDET2/
+   SHENDETI-IM/
    └─ app/
       └─ release/
          └─ app-release.apk ← Your APK
@@ -52,7 +52,7 @@
 
 ```powershell
 # Navigate to project
-cd "C:\Users\roven\AndroidStudioProjects\SHENDET2"
+cd "C:\Users\roven\AndroidStudioProjects\SHENDETI-IM"
 
 # Build Debug APK
 .\gradlew.bat assembleDebug
@@ -218,7 +218,7 @@ Solution:
 
 ### App Details
 ```
-Name: SHENDET
+Name: SHENDETI-IM
 Package: com.example.shendet
 Version: 1.0 (Code: 1)
 Min SDK: 24 (Android 7.0)
@@ -313,7 +313,7 @@ Before building:
 **After successful build:**
 
 ```
-C:\Users\roven\AndroidStudioProjects\SHENDET2\
+C:\Users\roven\AndroidStudioProjects\SHENDETI-IM\
 ├── app\build\outputs\apk\
 │   ├── debug\
 │   │   └── app-debug.apk ← For testing
@@ -331,7 +331,7 @@ All preparations complete.
 
 ---
 
-*APK Build Guide - SHENDET v1.0*
+*APK Build Guide - SHENDETI-IM v1.0*
 *Date: July 14, 2026*
 *Status: READY TO BUILD ✅*
 

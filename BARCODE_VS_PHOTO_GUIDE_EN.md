@@ -2,7 +2,7 @@
 
 ## 🎯 New Features
 
-Your SHENDET app now:
+Your SHENDETI-IM app now:
 - ✅ Distinguishes between **barcode scans** and **photo analysis**
 - ✅ Shows clear Albanian messages when product is **not found**
 - ✅ Provides **direct link to add product** to OpenFoodFacts

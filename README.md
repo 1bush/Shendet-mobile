@@ -375,7 +375,7 @@ All colors and text are configurable in the composables.
 
 ## 🎉 You're Ready!
 
-Your SHENDET app now has professional-grade product comparison.
+Your SHENDETI-IM app now has professional-grade product comparison.
 
 ### Start Here:
 1. Open `QUICK_REFERENCE.md`

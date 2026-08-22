@@ -3,7 +3,7 @@
 # Run this after adding the code to your project
 
 echo "================================"
-echo "SHENDET Product Comparison Setup"
+echo "SHENDETI-IM Product Comparison Setup"
 echo "================================"
 echo ""
 

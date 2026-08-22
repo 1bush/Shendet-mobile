@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="Theme.SHENDET" parent="Theme.MaterialComponents.Light">
+    <style name="Theme.SHENDETI_IM" parent="Theme.MaterialComponents.Light">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>

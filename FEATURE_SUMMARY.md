@@ -2,7 +2,7 @@
 
 ## 🎯 Mission Accomplished
 
-Your SHENDET app now perfectly handles:
+Your SHENDETI-IM app now perfectly handles:
 ✅ **Barcode Scanner** (📊) - High accuracy product lookup
 ✅ **Photo Analysis** (📸) - Groq AI-powered image recognition  
 ✅ **Manual Input** (✏️) - User-entered product names
@@ -382,7 +382,7 @@ Read: `BARCODE_VS_PHOTO_GUIDE_EN.md`
 
 ## 🎉 Summary
 
-Your SHENDET app now has:
+Your SHENDETI-IM app now has:
 ✅ Three distinct lookup modes with clear visual badges
 ✅ Graceful product-not-found handling
 ✅ Albanian error messages with solutions

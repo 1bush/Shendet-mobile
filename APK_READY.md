@@ -19,7 +19,7 @@ DOKUMENTACIONI: ✅ I PLOTË
 
 1. **Hap Projektin**
    - Lëshoj Android Studio
-   - Hap: `SHENDET2`
+   - Hap: `SHENDETI-IM`
 
 2. **Ndërto APK**
    - Shko në: `Build` → `Build Bundle(s)/APK(s)` → `Build APK(s)`
@@ -32,7 +32,7 @@ DOKUMENTACIONI: ✅ I PLOTË
 ### Metoda 2: Përmes Terminal
 
 ```powershell
-cd "C:\Users\roven\AndroidStudioProjects\SHENDET2"
+cd "C:\Users\roven\AndroidStudioProjects\SHENDETI-IM"
 .\gradlew.bat assembleRelease
 ```
 
@@ -124,7 +124,7 @@ Përpara publikimit, testo:
 ## 📁 STRUKTURË E PROJEKTIT
 
 ```
-SHENDET2/
+SHENDETI-IM/
 ├── app/
 │   ├── src/
 │   │   └── main/
@@ -290,7 +290,7 @@ Nëse ke ndonjë problem gjatë ndërtimit:
 
 ---
 
-*APK Build Ready - SHENDET v1.0*
+*APK Build Ready - SHENDETI-IM v1.0*
 *Status: ✅ GATI PËR NDËRTIM*
 *Data: 14 Korrik 2026*
 

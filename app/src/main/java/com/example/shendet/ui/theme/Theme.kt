@@ -81,7 +81,7 @@ private val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun SHENDETTheme(
+fun SHENDETIIMTheme(
     darkTheme: Boolean = false,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

@@ -2,7 +2,7 @@
 
 ## ✅ Completed Implementation
 
-Your SHENDET app now has a complete product comparison system that:
+Your SHENDETI-IM app now has a complete product comparison system that:
 1. **Reads products** using Groq AI and LLMs
 2. **Compares with OpenFoodFacts** for data validation
 3. **Generates concordance scores** (0-100%)
@@ -314,7 +314,7 @@ UI Display
 ## 📝 Files Location Reference
 
 ```
-SHENDET2/
+SHENDETI-IM/
 ├── app/src/main/java/com/example/shendet/
 │   ├── data/
 │   │   ├── model/

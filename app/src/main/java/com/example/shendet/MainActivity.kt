@@ -27,7 +27,7 @@ import com.example.shendet.data.repository.UnifiedProductRepository
 import com.example.shendet.data.repository.HistoryRepository
 import com.example.shendet.ui.navigation.Route
 import com.example.shendet.ui.screens.*
-import com.example.shendet.ui.theme.SHENDETTheme
+import com.example.shendet.ui.theme.SHENDETIIMTheme
 
 class MainActivity : FragmentActivity() {
     private val database by lazy { ShendetDatabase.getDatabase(this) }
@@ -55,7 +55,7 @@ class MainActivity : FragmentActivity() {
         setContent {
             var isAuthenticated by remember { mutableStateOf(value = false) }
             
-            SHENDETTheme {
+            SHENDETIIMTheme {
                 if (isAuthenticated) {
                     SHENDETApp(allergyRepository, historyRepository)
                 } else {

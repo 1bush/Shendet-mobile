@@ -12,7 +12,7 @@ Aplikacioni **SHENDET** është **100% GATI** për ndërtim APK!
 
 ```
 1. Hap Android Studio
-2. File → Open → SHENDET2
+2. File → Open → SHENDETI-IM
 3. Build → Build Bundle(s)/APK(s) → Build APK(s)
 4. Prit deri shfaqet "APK Generated"
 5. Gjet APK në: app/release/app-release.apk
@@ -21,7 +21,7 @@ Aplikacioni **SHENDET** është **100% GATI** për ndërtim APK!
 ### Metoda 2: PowerShell (Më shpejt)
 
 ```powershell
-cd C:\Users\roven\AndroidStudioProjects\SHENDET2
+cd C:\Users\roven\AndroidStudioProjects\SHENDETI-IM
 .\gradlew.bat assembleRelease
 ```
 
@@ -75,7 +75,7 @@ cd C:\Users\roven\AndroidStudioProjects\SHENDET2
 ## 📁 VENDNDODHJA E APK
 
 ```
-SHENDET2/app/build/outputs/apk/release/app-release.apk
+SHENDETI-IM/app/build/outputs/apk/release/app-release.apk
 ```
 
 ---
@@ -117,7 +117,7 @@ PowerShell → .\gradlew.bat assembleRelease
 
 ---
 
-*SHENDET v1.0 - Gati për Prodhim*
+*SHENDETI-IM v1.0 - Gati për Prodhim*
 *14 Korrik 2026*
 *Status: ✅ PËRFUNDIM*
 

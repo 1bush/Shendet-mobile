@@ -1,4 +1,4 @@
-## SHENDET Product Comparison - Quick Reference
+## SHENDETI-IM Product Comparison - Quick Reference
 
 ### 🚀 Quick Start
 
