@@ -12,7 +12,8 @@ enum class DataSource {
     FOOD_DATA_CENTRAL,
     INCI_BEAUTY,
     OPEN_BEAUTY_FACTS,
-    OLLAMA
+    OLLAMA,
+    NOCO_DB
 }
 
 data class ProductLookup(

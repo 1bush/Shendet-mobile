@@ -31,12 +31,26 @@ android {
         val nixAppId = localProps.getProperty("NUTRITIONIX_APP_ID")?.trim() ?: ""
         val nixAppKey = localProps.getProperty("NUTRITIONIX_APP_KEY")?.trim() ?: ""
         val inciBeautyUrl = localProps.getProperty("INCI_BEAUTY_BASE_URL")?.trim() ?: ""
+        val nocoDbUrl = localProps.getProperty("NOCODB_BASE_URL")?.trim() ?: ""
+        val nocoDbToken = localProps.getProperty("NOCODB_TOKEN")?.trim() ?: ""
+        val nocoOrgId = localProps.getProperty("NOCODB_ORG_ID")?.trim() ?: ""
+        val nocoBaseId = localProps.getProperty("NOCODB_BASE_ID")?.trim() ?: ""
+        val nocoProductsTable = localProps.getProperty("NOCODB_PRODUCTS_TABLE_ID")?.trim() ?: ""
+        val nocoAllergensTable = localProps.getProperty("NOCODB_ALLERGENS_TABLE_ID")?.trim() ?: ""
+        val nocoInciTable = localProps.getProperty("NOCODB_INCI_TABLE_ID")?.trim() ?: ""
         buildConfigField("String", "OLLAMA_BASE_URL", "\"$ollamaUrl\"")
         buildConfigField("String", "OLLAMA_MODEL", "\"llama3:latest\"")
         buildConfigField("String", "USDA_API_KEY", "\"$usdaKey\"")
         buildConfigField("String", "NUTRITIONIX_APP_ID", "\"$nixAppId\"")
         buildConfigField("String", "NUTRITIONIX_APP_KEY", "\"$nixAppKey\"")
         buildConfigField("String", "INCI_BEAUTY_BASE_URL", "\"$inciBeautyUrl\"")
+        buildConfigField("String", "NOCODB_BASE_URL", "\"$nocoDbUrl\"")
+        buildConfigField("String", "NOCODB_TOKEN", "\"$nocoDbToken\"")
+        buildConfigField("String", "NOCODB_ORG_ID", "\"$nocoOrgId\"")
+        buildConfigField("String", "NOCODB_BASE_ID", "\"$nocoBaseId\"")
+        buildConfigField("String", "NOCODB_PRODUCTS_TABLE_ID", "\"$nocoProductsTable\"")
+        buildConfigField("String", "NOCODB_ALLERGENS_TABLE_ID", "\"$nocoAllergensTable\"")
+        buildConfigField("String", "NOCODB_INCI_TABLE_ID", "\"$nocoInciTable\"")
     }
 
     signingConfigs {

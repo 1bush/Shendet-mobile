@@ -4,6 +4,8 @@
 
 Your SHËNDETI-IM Android app includes a product health scanner that combines open product databases, transparent ingredient checks and Ollama AI.
 
+Optional NocoDB integration manages products, allergens and INCI ingredients. See `NOCODB_SETUP.md`.
+
 ### What It Does
 - **Reads products** using Ollama AI
 - **Compares** with OpenFoodFacts database  

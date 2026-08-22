@@ -34,6 +34,7 @@ class UnifiedProductRepository(
     private val usdaApiKey: String = "DEMO_KEY",
     private val nixAppId: String = "",
     private val nixAppKey: String = "",
+    private val nocoDbRepository: NocoDbRepository? = null,
 ) {
     private val inciIngredientSource = InciIngredientDataSource()
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -127,6 +128,7 @@ class UnifiedProductRepository(
 
     private suspend fun lookupProduct(barcode: String, target: String): LookupResult? {
         val isBarcode = barcode.all { it.isDigit() } && barcode.length >= 8
+        nocoDbRepository?.findProduct(barcode)?.let { return LookupResult(it.name, it.brand, it.ingredients, it.nutrients, "NocoDB") }
         if (isBarcode) {
             try {
                 val p = offReadApi.getProduct(barcode).product
@@ -231,15 +233,35 @@ class UnifiedProductRepository(
         val systemPrompt = getSystemPrompt(categoryRequirement)
 
         val queryText = if (lookup != null) {
+            val remoteInciFindings = lookup.ingredients
+                ?.split(',', ';', '\n')
+                ?.map { it.trim() }
+                ?.filter { it.length >= 3 }
+                ?.distinctBy { it.lowercase() }
+                ?.take(20)
+                ?.mapNotNull { nocoDbRepository?.findInciIngredient(nocoIngredientName(n)) }
+                .orEmpty()
+            val remoteAllergens = lookup.ingredients
+                ?.split(',', ';', '\n')
+                ?.map { it.trim() }
+                ?.filter { it.length >= 3 }
+                ?.distinctBy { it.lowercase() }
+                ?.take(20)
+                ?.mapNotNull { nocoDbRepository?.findAllergen(nocoIngredientName(it)) }
+                .orEmpty()
             buildString {
                 append("Analizo kÃƒÂ«tÃƒÂ« produkt. Burimi: ${lookup.source}. ")
                 append("Emri: ${lookup.name}")
                 lookup.brand?.let { append(", Brendi: $it") }
                 lookup.ingredients?.let { ingredients ->
-                    val findings = inciIngredientSource.analyze(ingredients)
+                    val findings = inciIngredientSource.analyze(ingredients) + remoteInciFindings
                     if (findings.isNotEmpty()) {
                         append(". Gjetje nga databaza lokale INCI: ")
                         append(findings.joinToString("; ") { "${it.ingredient} (${it.risk}: ${it.explanation})" })
+                    }
+                    if (remoteAllergens.isNotEmpty()) {
+                        append(". Alergjenë të njohur nga NocoDB: ")
+                        append(remoteAllergens.joinToString("; ") { "${it.name} (${it.severity ?: "kujdes"})" })
                     }
                 }
                 lookup.ingredients?.let { append(". PÃƒÂ«rbÃƒÂ«rÃƒÂ«sit: $it") }
@@ -256,6 +278,11 @@ class UnifiedProductRepository(
         )
         runOllama(request)
     }
+
+    private fun nocoIngredientName(raw: String): String = raw
+        .substringBefore('(')
+        .trim()
+        .lowercase()
 
     suspend fun analyzeImages(productBitmap: Bitmap?, ingredientsBitmap: Bitmap?, target: String = "food"): Result<ProductAnalysis> = withContext(Dispatchers.IO) {
         val requirement = getCategoryRequirement(target)

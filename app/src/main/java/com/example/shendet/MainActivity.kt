@@ -25,6 +25,7 @@ import com.example.shendet.data.local.ShendetDatabase
 import com.example.shendet.data.repository.AllergyRepository
 import com.example.shendet.data.repository.UnifiedProductRepository
 import com.example.shendet.data.repository.HistoryRepository
+import com.example.shendet.data.repository.NocoDbRepository
 import com.example.shendet.ui.navigation.Route
 import com.example.shendet.ui.screens.*
 import com.example.shendet.ui.theme.SHENDETTheme
@@ -118,7 +119,16 @@ fun SHENDETApp(
             inciBeautyBaseUrl = BuildConfig.INCI_BEAUTY_BASE_URL,
             usdaApiKey = BuildConfig.USDA_API_KEY,
             nixAppId = BuildConfig.NUTRITIONIX_APP_ID,
-            nixAppKey = BuildConfig.NUTRITIONIX_APP_KEY
+            nixAppKey = BuildConfig.NUTRITIONIX_APP_KEY,
+            nocoDbRepository = NocoDbRepository(
+                baseUrl = BuildConfig.NOCODB_BASE_URL,
+                token = BuildConfig.NOCODB_TOKEN,
+                orgId = BuildConfig.NOCODB_ORG_ID,
+                baseId = BuildConfig.NOCODB_BASE_ID,
+                productsTableId = BuildConfig.NOCODB_PRODUCTS_TABLE_ID,
+                allergensTableId = BuildConfig.NOCODB_ALLERGENS_TABLE_ID,
+                inciTableId = BuildConfig.NOCODB_INCI_TABLE_ID
+            )
         )
     }
 
