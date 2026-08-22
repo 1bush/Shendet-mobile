@@ -173,7 +173,7 @@ fun AnalysisScreen(
                 Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Duke analizuar me AI Router...", style = MaterialTheme.typography.bodyLarge)
+                    Text("Duke analizuar me databaza dhe Ollama AI...", style = MaterialTheme.typography.bodyLarge)
                 }
             } else if (error != null) {
                 Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
