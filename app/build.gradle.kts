@@ -1,0 +1,142 @@
+import java.util.Properties
+
+val localProps = Properties().also { props ->
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { props.load(it) }
+}
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.jetbrains.kotlin.plugin.serialization)
+}
+
+android {
+    namespace = "com.example.shendet"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.example.shendet"
+        minSdk = 24
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val ollamaUrl = localProps.getProperty("OLLAMA_BASE_URL")?.trim()
+            ?: "http://10.0.2.2:11434/"
+        val usdaKey = localProps.getProperty("USDA_API_KEY")?.trim() ?: "DEMO_KEY"
+        val nixAppId = localProps.getProperty("NUTRITIONIX_APP_ID")?.trim() ?: ""
+        val nixAppKey = localProps.getProperty("NUTRITIONIX_APP_KEY")?.trim() ?: ""
+        val inciBeautyUrl = localProps.getProperty("INCI_BEAUTY_BASE_URL")?.trim() ?: ""
+        buildConfigField("String", "OLLAMA_BASE_URL", "\"$ollamaUrl\"")
+        buildConfigField("String", "OLLAMA_MODEL", "\"llama3:latest\"")
+        buildConfigField("String", "USDA_API_KEY", "\"$usdaKey\"")
+        buildConfigField("String", "NUTRITIONIX_APP_ID", "\"$nixAppId\"")
+        buildConfigField("String", "NUTRITIONIX_APP_KEY", "\"$nixAppKey\"")
+        buildConfigField("String", "INCI_BEAUTY_BASE_URL", "\"$inciBeautyUrl\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = localProps.getProperty("RELEASE_KEYSTORE_PATH")?.trim()
+            val keystorePassword = localProps.getProperty("RELEASE_KEYSTORE_PASSWORD")?.trim()
+            val keyAlias = localProps.getProperty("RELEASE_KEY_ALIAS")?.trim()
+            val keyPassword = localProps.getProperty("RELEASE_KEY_PASSWORD")?.trim()
+
+            if (keystorePath != null && keystorePassword != null && keyAlias != null && keyPassword != null) {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            val releaseSigning = signingConfigs.getByName("release")
+            signingConfig = if (releaseSigning.storeFile != null) {
+                releaseSigning
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.mlkit.vision)
+    implementation(libs.play.services.mlkit.barcode.scanning)
+    implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.compose.adaptive.layout)
+    implementation(libs.androidx.compose.adaptive.navigation3)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.gif)
+    implementation(libs.converter.moshi)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.logging.interceptor)
+    implementation(libs.material)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.okhttp)
+    implementation(libs.play.services.location)
+    implementation(libs.retrofit)
+    implementation(libs.androidx.biometric)
+    implementation(libs.tensorflow.lite)
+    implementation(libs.pytorch.android.lite)
+    implementation(libs.pytorch.android.torchvision.lite)
+    testImplementation(libs.androidx.core)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.runner)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    "ksp"(libs.androidx.room.compiler)
+    "ksp"(libs.moshi.kotlin.codegen)
+}

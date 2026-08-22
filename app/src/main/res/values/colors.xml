@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light blue health palette -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="primary_light">#63A4FF</color>
+    <color name="secondary">#0288D1</color>
+    <color name="secondary_dark">#01579B</color>
+    <color name="secondary_light">#5EB8FF</color>
+    <color name="tertiary">#1565C0</color>
+    <color name="accent">#039BE5</color>
+    <color name="error">#FF1744</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
