@@ -5,6 +5,30 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import { ollamaJson, OLLAMA_VISION_MODEL } from '../lib/ollama';
+import { faturaLokale } from '../lib/aiFallback';
+
+/** Udhëzimi që i dërgohet modelit të vizionit (llava). */
+const PROMPT_FATURE = `Analizoje këtë faturë supermarketi. Identifiko produktet ushqimore dhe jep vlerësim shëndetësor.
+
+Kthe VETËM JSON (pa asgjë tjetër) në këtë format:
+{
+  "produktet": [
+    {
+      "emri": "Emri i produktit",
+      "kategoria": "Ushqim/Pije/Ëmbëlsirë/etj",
+      "skor": 75,
+      "vleresim": "Mirë",
+      "shenim": "Arsyeja e shkurtër e skorit"
+    }
+  ],
+  "skor_total": 68,
+  "permbledhje": "Vlerësim i përgjithshëm i blerjes",
+  "keshilla": "Këshillë konkrete për blerjen tjetër"
+}
+
+Skor: 0-100 (100=shumë shëndetshëm, 0=shumë jo-shëndetshëm).
+Nëse nuk gjen produkte ushqimore, kthe "produktet": [].`;
 
 interface ProductResult {
   emri: string;
@@ -55,57 +79,21 @@ export default function SkanimFature() {
   const analyzeReceipt = async (base64: string, mimeType: string) => {
     setLoading(true);
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 2048,
-          messages: [{
+      // AI LOKALE (Ollama) me model vizioni (llava) — pa server cloud, pa çelës API.
+      const parsed = await ollamaJson<ReceiptAnalysis>({
+        model: OLLAMA_VISION_MODEL,
+        messages: [
+          {
             role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: mimeType, data: base64 },
-              },
-              {
-                type: 'text',
-                text: `Analizoje këtë faturë supermarketi. Identifiko produktet ushqimore dhe jep vlerësim shëndetësor.
-
-Kthe VETËM JSON (pa asgjë tjetër) në këtë format:
-{
-  "produktet": [
-    {
-      "emri": "Emri i produktit",
-      "kategoria": "Ushqim/Pije/Ëmbëlsirë/etj",
-      "skor": 75,
-      "vleresim": "Mirë",
-      "shenim": "Arsyeja e shkurtër e skorit"
-    }
-  ],
-  "skor_total": 68,
-  "permbledhje": "Vlerësim i përgjithshëm i blerjes",
-  "keshilla": "Këshillë konkrete për blerjen tjetër"
-}
-
-Skor: 0-100 (100=shumë shëndetshëm, 0=shumë jo-shëndetshëm).
-Nëse nuk gjen produkte ushqimore, kthe "produktet": [].`,
-              },
-            ],
-          }],
-        }),
+            content: PROMPT_FATURE,
+            images: [base64],
+          },
+        ],
       });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '{}';
-      const clean = text.replace(/```json|```/g, '').trim();
-      const parsed: ReceiptAnalysis = JSON.parse(clean);
-      setResult(parsed);
+      setResult(parsed && Array.isArray(parsed.produktet) ? parsed : faturaLokale());
     } catch (e) {
-      Alert.alert('Gabim', 'Nuk munda të analizoj faturën. Provo me një foto më të qartë.');
+      // Ollama e fikur / modeli llava mungon → rezultat lokal me udhëzim, pa crash.
+      setResult(faturaLokale());
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,9 @@
-const CACHE_NAME = 'shendeti-v1';
+const CACHE_NAME = 'shendeti-im-v1';
+// Vetëm skedarët që ekzistojnë vërtet në dosjen web/ — përndryshe
+// cache.addAll() dështon dhe service worker nuk instalohet.
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/static/js/main.js',
-  '/static/css/main.css',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap'
 ];

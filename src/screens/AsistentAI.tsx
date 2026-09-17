@@ -5,6 +5,8 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { ollamaChat, eshteGabimLidhje } from '../lib/ollama';
+import { pergjigjeLokale } from '../lib/aiFallback';
 
 interface Message {
   id: string;
@@ -60,35 +62,31 @@ export default function AsistentAI() {
     try {
       const history = [...messages, userMsg]
         .filter(m => m.id !== '0')
-        .map(m => ({ role: m.role, content: m.content }));
+        .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1024,
-          system: SYSTEM_PROMPT,
-          messages: history.length > 0 ? history : [{ role: 'user', content: userMsg.content }],
-        }),
+      // AI LOKALE (Ollama) — pa server cloud, pa çelës API, pa pagesë.
+      const text = await ollamaChat({
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...(history.length > 0
+            ? history
+            : [{ role: 'user' as const, content: userMsg.content }]),
+        ],
       });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || 'Nuk munda të përgjigjem. Provo përsëri.';
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: text,
         timestamp: new Date(),
       }]);
-    } catch {
+    } catch (e) {
+      // Ollama e fikur / IP e gabuar → përgjigje lokale; aplikacioni nuk bllokohet.
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Gabim në lidhje. Kontrollo internetin dhe provo përsëri.',
+        content: eshteGabimLidhje(e)
+          ? pergjigjeLokale(userMsg.content)
+          : 'Gabim gjatë përpunimit të përgjigjes. Provo përsëri.',
         timestamp: new Date(),
       }]);
     } finally {

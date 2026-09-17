@@ -1,26 +1,24 @@
 {
   "expo": {
-    "name": "SHËNDETI",
-    "slug": "shendet-mobile",
+    "name": "SHËNDETI-IM",
+    "slug": "shendeti-im",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#1a7a4a"
     },
+    "assetBundlePatterns": ["**/*"],
     "android": {
+      "package": "al.shendeti.im",
       "adaptiveIcon": {
         "backgroundColor": "#1a7a4a"
       },
-      "package": "al.shendet.mobile"
+      "permissions": ["CAMERA"]
     },
     "ios": {
-      "bundleIdentifier": "al.shendet.mobile"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "bundleIdentifier": "al.shendeti.im"
     }
   }
 }

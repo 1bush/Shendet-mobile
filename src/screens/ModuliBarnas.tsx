@@ -4,6 +4,8 @@ import {
   StyleSheet, SafeAreaView, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { ollamaJson } from '../lib/ollama';
+import { barnaLokale, pergjigjeLokale } from '../lib/aiFallback';
 
 interface MedInfo {
   emri: string;
@@ -15,6 +17,24 @@ interface MedInfo {
   nderveprime: string;
   ekuivalente: string;
 }
+
+/** Udhëzimi që i dërgohet modelit lokal (Ollama). */
+const PROMPT_BARNA = (query: string) =>
+  `Jep informacion bazë për ilaçin/barnën: "${query}"
+
+Kthe VETËM JSON (pa asgjë tjetër):
+{
+  "emri": "Emri i plotë i ilaçit",
+  "lloji": "Lloji (analgjezik, antibiotik, etj)",
+  "perdorimi": "Për çfarë përdoret (1-2 fjali)",
+  "dozimi": "Dozimi tipik për të rritur",
+  "efekte_anesore": ["efekt 1", "efekt 2", "efekt 3"],
+  "kujdes": ["kujdes 1", "kujdes 2"],
+  "nderveprime": "Ndërveprimet kryesore me ilaçe tjera (1 fjali)",
+  "ekuivalente": "Alternativa/ekuivalente të zakonshme shqiptare"
+}
+
+Nëse nuk gjen ilaçin, kthe {"emri": "", "gabim": "Ilaçi nuk u gjet"}`;
 
 const SHEMBUJ = ['Paracetamol', 'Ibuprofen', 'Amoxicilin', 'Omeprazol', 'Metformin'];
 
@@ -32,46 +52,24 @@ export default function ModuliBarnas() {
     setError('');
 
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1024,
-          messages: [{
-            role: 'user',
-            content: `Jep informacion bazë për ilaçin/barnën: "${query}"
-
-Kthe VETËM JSON (pa asgjë tjetër):
-{
-  "emri": "Emri i plotë i ilaçit",
-  "lloji": "Lloji (analgjezik, antibiotik, etj)",
-  "perdorimi": "Për çfarë përdoret (1-2 fjali)",
-  "dozimi": "Dozimi tipik për të rritur",
-  "efekte_anesore": ["efekt 1", "efekt 2", "efekt 3"],
-  "kujdes": ["kujdes 1", "kujdes 2"],
-  "nderveprime": "Ndërveprimet kryesore me ilaçe tjera (1 fjali)",
-  "ekuivalente": "Alternativa/ekuivalente të zakonshme shqiptare"
-}
-
-Nëse nuk gjen ilaçin, kthe {"emri": "", "gabim": "Ilaçi nuk u gjet"}`
-          }],
-        }),
+      // AI LOKALE (Ollama) — pa server cloud, pa çelës API, pa pagesë.
+      const parsed = await ollamaJson<MedInfo & { gabim?: string }>({
+        messages: [{ role: 'user', content: PROMPT_BARNA(query) }],
       });
-      const data = await res.json();
-      const text = data.content?.[0]?.text || '{}';
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      if (parsed.gabim || !parsed.emri) {
-        setError('Ilaçi nuk u gjet. Provo një emër tjetër.');
-      } else {
+
+      if (parsed && !parsed.gabim && parsed.emri) {
         setResult(parsed);
+      } else {
+        // Modeli nuk e njeh → provo bazën lokale edukative.
+        const lokale = barnaLokale(query);
+        if (lokale) setResult(lokale);
+        else setError('Ilaçi nuk u gjet. Provo një emër tjetër.');
       }
     } catch {
-      setError('Gabim në lidhje. Provo përsëri.');
+      // Ollama e fikur → baza lokale, përndryshe shpjegim i qartë shqip.
+      const lokale = barnaLokale(query);
+      if (lokale) setResult(lokale);
+      else setError(pergjigjeLokale('ilaç'));
     } finally {
       setLoading(false);
     }

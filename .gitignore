@@ -1,0 +1,28 @@
+# ─── SHËNDETI-IM · .gitignore ───────────────────────────────
+node_modules/
+.expo/
+dist/
+web-build/
+build/
+
+# Android / iOS të gjeneruara nga "expo prebuild"
+/android/
+/ios/
+
+# Kredencialet — kurrë mos i bëj commit
+.env
+.env.local
+.env.*.local
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
+# Zhvillimi
+npm-debug.log*
+yarn-error.log*
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
