@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.shendet.R
-import com.example.shendet.ui.theme.SHENDETTheme
+import com.example.shendet.ui.theme.SHENDETIIMTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -495,7 +495,7 @@ fun RecentItemPlaceholder(index: Int) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DashboardPreview() {
-    SHENDETTheme {
+    SHENDETIIMTheme {
         DashboardScreen({_ ->}, {}, {}, {}, {}, {}, {}, {})
     }
 }

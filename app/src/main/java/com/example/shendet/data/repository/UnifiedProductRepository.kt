@@ -1,4 +1,4 @@
-﻿package com.example.shendet.data.repository
+package com.example.shendet.data.repository
 
 import android.graphics.Bitmap
 import android.util.Base64
@@ -11,6 +11,7 @@ import com.example.shendet.data.api.NixItemQuery
 import com.example.shendet.data.api.NixNaturalQuery
 import com.example.shendet.data.api.NixBrandedItem
 import com.example.shendet.data.api.OpenFoodFactsApi
+import com.example.shendet.data.api.OFFProduct
 import com.example.shendet.data.api.OFFWriteRequest
 import com.example.shendet.data.api.OFFWriteProduct
 import com.example.shendet.data.model.*
@@ -247,7 +248,7 @@ class UnifiedProductRepository(
                 lookup.nutrients?.let { append(". Vlerat ushqyese (pÃƒÂ«r 100g): $it") }
                 append(". Barkodi: $barcode")
             }
-        } else {
+         else {
             "Analizo kÃƒÂ«tÃƒÂ« produkt ose listÃƒÂ« pÃƒÂ«rbÃƒÂ«rÃƒÂ«sish: $barcode"
         }
 
