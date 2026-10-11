@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Activi
 import { addToHistory } from "../utils/storage";
 import HistoryPanel from "../components/HistoryPanel";
 import BarcodeScanner from "../components/BarcodeScanner";
+import BounceIcon from "../components/BounceIcon";
 import {
   getAdditiveInfo,
   additivePenalty,
@@ -520,7 +521,7 @@ export default function FoodScreen() {
       </View>
       <View style={[styles.header, { backgroundColor: ACCENT }]}>
         <View style={[styles.headerBadge, { backgroundColor: ACCENT + "22" }]}>
-  <Image source={require("../../assets/food.png")} style={styles.headerBadgeImg} />
+  <BounceIcon source={require("../../assets/food.png")} size={34} style={styles.headerBadgeImg} />
   <Text style={styles.headerBadgeText}>Ushqim</Text>
 </View>
         <Text style={styles.headerSub}>Skanoni barkodin për të zbuluar përbërjen</Text>

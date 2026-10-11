@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Image } from "react-native";
 import BarcodeScanner from "../components/BarcodeScanner";
+import BounceIcon from "../components/BounceIcon";
 
 const ACCENT = "#c0427a";
 
@@ -83,7 +84,7 @@ export default function CosmeticsScreen() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
       <View style={[styles.header, { backgroundColor: ACCENT }]}>
         <View style={[styles.headerBadge, { backgroundColor: ACCENT + "22" }]}>
-  <Image source={require("../../assets/cosmetics.png")} style={styles.headerBadgeImg} />
+  <BounceIcon source={require("../../assets/cosmetics.png")} size={34} style={styles.headerBadgeImg} />
   <Text style={styles.headerBadgeText}>Kozmetikë</Text>
 </View>
         <Text style={styles.headerSub}>Zbuloni përbërësit e rrezikshëm</Text>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Image } from "react-native";
 import BarcodeScanner from "../components/BarcodeScanner";
+import BounceIcon from "../components/BounceIcon";
 
 const ACCENT = "#4a2d8a";
 
@@ -76,7 +77,7 @@ export default function AnimalFoodScreen() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
       <View style={[styles.header, { backgroundColor: ACCENT }]}>
         <View style={[styles.headerBadge, { backgroundColor: ACCENT + "22" }]}>
-  <Image source={require("../../assets/pet.png")} style={styles.headerBadgeImg} />
+  <BounceIcon source={require("../../assets/pet.png")} size={34} style={styles.headerBadgeImg} />
   <Text style={styles.headerBadgeText}>Kafshë</Text>
 </View>
         <Text style={styles.headerSub}>Vlerësoni ushqimin për mace ose qen</Text>

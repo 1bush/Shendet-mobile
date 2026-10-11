@@ -2,7 +2,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Text, Image } from "react-native";
+import { Text } from "react-native";
+import BounceIcon from "./src/components/BounceIcon";
 
 // Ekranet kryesore
 import FoodScreen from "./src/screens/FoodScreen";
@@ -39,7 +40,7 @@ const TABS = [
   { name: "Profili", component: ProfiletFamiljare, hidden: true },
 ];
 
-const tabBarIcon = (iconFile) => () => <Image source={iconFile} style={{ width: 26, height: 26 }} />;
+const tabBarIcon = (iconFile) => () => <BounceIcon source={iconFile} size={26} />;
 
 export default function App() {
   return (
