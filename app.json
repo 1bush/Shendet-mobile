@@ -6,8 +6,14 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#1a7a4a"
+      "image": "./assets/splash.png",
+      "backgroundColor": "#1a7a4a",
+      "resizeMode": "contain"
+    },
+    "icon": "./assets/icons/logo.png",
+    "adaptiveIcon": {
+      "backgroundColor": "#1a7a4a",
+      "foregroundImage": "./assets/icons/logo.png"
     },
     "assetBundlePatterns": ["**/*"],
     "android": {

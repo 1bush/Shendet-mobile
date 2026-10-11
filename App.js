@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Text } from "react-native";
+import { Text, Image } from "react-native";
 
 // Ekranet kryesore
 import FoodScreen from "./src/screens/FoodScreen";
@@ -19,20 +19,27 @@ import ProfiletFamiljare from "./src/screens/ProfiletFamiljare";
 
 const Tab = createBottomTabNavigator();
 
-/** Konfigurimi i të gjithë tab-eve — 5 të dukshme + 4 në menunë "Më shumë". */
+// Ikonat cartoon nga karta e shkruese (shtojë në assets/icons/)
+const ICON_FILES = {
+  food:     require("./assets/food.png"),
+  pet:      require("./assets/pet.png"),
+  cosmetics: require("./assets/cosmetics.png"),
+  asistent:  require("./assets/asistent.png"),
+};
+
 const TABS = [
-  { name: "Ushqim", emoji: "🥗", component: FoodScreen, hidden: false },
-  { name: "Kafshë", emoji: "🐾", component: AnimalFoodScreen, hidden: false },
-  { name: "Kozmetikë", emoji: "✨", component: CosmeticsScreen, hidden: false },
-  { name: "Asistenti", emoji: "🤖", component: AsistentAI, hidden: false },
-  { name: "Më shumë", emoji: "➕", component: Menu, hidden: false },
-  { name: "Faturë", emoji: "🧾", component: SkanimFature, hidden: true },
-  { name: "Barnat", emoji: "💊", component: ModuliBarnas, hidden: true },
-  { name: "Harta", emoji: "🗺️", component: HartaProdukteve, hidden: true },
-  { name: "Profili", emoji: "👤", component: ProfiletFamiljare, hidden: true },
+  { name: "Ushqim", icon: ICON_FILES.food, component: FoodScreen, hidden: false },
+  { name: "Kafshë", icon: ICON_FILES.pet, component: AnimalFoodScreen, hidden: false },
+  { name: "Kozmetikë", icon: ICON_FILES.cosmetics, component: CosmeticsScreen, hidden: false },
+  { name: "Asistenti", icon: ICON_FILES.asistent, component: AsistentAI, hidden: false },
+  { name: "Më shumë", component: Menu, hidden: false },
+  { name: "Faturë", component: SkanimFature, hidden: true },
+  { name: "Barnat", component: ModuliBarnas, hidden: true },
+  { name: "Harta", component: HartaProdukteve, hidden: true },
+  { name: "Profili", component: ProfiletFamiljare, hidden: true },
 ];
 
-const icona = (emoji) => () => <Text style={{ fontSize: 20 }}>{emoji}</Text>;
+const tabBarIcon = (iconFile) => () => <Image source={iconFile} style={{ width: 26, height: 26 }} />;
 
 export default function App() {
   return (
@@ -69,7 +76,7 @@ export default function App() {
                     }
                   : {
                       tabBarLabel: t.name,
-                      tabBarIcon: icona(t.emoji),
+                      tabBarIcon: tabBarIcon(t.icon),
                     }
               }
             />

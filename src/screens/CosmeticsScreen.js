@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, ActivityIndicator, Image } from "react-native";
+import BarcodeScanner from "../components/BarcodeScanner";
 
 const ACCENT = "#c0427a";
 
@@ -43,6 +44,7 @@ export default function CosmeticsScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [product, setProduct] = useState(null);
+  const [skaner, setSkaner] = useState(false);
 
   async function search(val) {
     const c = (val || code).trim();
@@ -77,9 +79,13 @@ export default function CosmeticsScreen() {
     : [];
 
   return (
+    <>
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 32 }}>
       <View style={[styles.header, { backgroundColor: ACCENT }]}>
-        <Text style={styles.headerTitle}>✨ Kozmetikë</Text>
+        <View style={[styles.headerBadge, { backgroundColor: ACCENT + "22" }]}>
+  <Image source={require("../../assets/cosmetics.png")} style={styles.headerBadgeImg} />
+  <Text style={styles.headerBadgeText}>Kozmetikë</Text>
+</View>
         <Text style={styles.headerSub}>Zbuloni përbërësit e rrezikshëm</Text>
         <View style={styles.inputRow}>
           <TextInput
@@ -90,7 +96,7 @@ export default function CosmeticsScreen() {
             keyboardType="numeric"
             onSubmitEditing={() => search()}
           />
-          <TouchableOpacity style={styles.searchBtn} onPress={() => search()}>
+          <TouchableOpacity style={styles.searchBtn} onPress={() => setSkaner(true)}>
             <Text style={{ color: "#fff", fontSize: 18 }}>📷</Text>
           </TouchableOpacity>
         </View>
@@ -180,6 +186,21 @@ export default function CosmeticsScreen() {
         )}
       </View>
     </ScrollView>
+
+      {/* Skaneri i barkodit — hapet me butonin 📷 */}
+      {skaner && (
+        <View style={styles.scannerOverlay}>
+          <BarcodeScanner
+            onScan={(data) => {
+              setSkaner(false);
+              search(data);
+            }}
+            onClose={() => setSkaner(false)}
+            accent={ACCENT}
+          />
+        </View>
+      )}
+    </>
   );
 }
 
@@ -187,6 +208,24 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fdf4f8" },
   header: { padding: 20, paddingTop: 16 },
   headerTitle: { color: "#fff", fontSize: 24, fontWeight: "800" },
+  headerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
+  },
+  headerBadgeImg: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+  },
+  headerBadgeText: {
+    color: "#fff",
+    fontWeight: "800",
+    fontSize: 18,
+  },
   headerSub: { color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4 },
   inputRow: { flexDirection: "row", gap: 10, marginTop: 16 },
   input: { flex: 1, backgroundColor: "#fff", borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 },
@@ -217,4 +256,8 @@ const styles = StyleSheet.create({
   errorText: { color: "#e74c3c", fontWeight: "600" },
   additiveBadge: { backgroundColor: "#f0f0f0", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   additiveText: { fontSize: 11, color: "#555", fontFamily: "monospace" },
+  scannerOverlay: {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "#000", zIndex: 100,
+  },
 });

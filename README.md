@@ -23,9 +23,9 @@ Aplikacion React Native (Expo) që skanon produkte ushqimore, kozmetikë dhe ush
 
 | Funksioni | Çfarë bën |
 |---|---|
-| 🥗 **Ushqim** | Skanon barkodin → NutriScore, 11 vitamina & 11 minerale me % RDA, alergjenët, përbërësit, historiku |
-| 🐾 **Kafshë** | Skanon ushqimin e qenit/maces → skor sipas proteinave, karbohidrateve dhe aditivëve |
-| ✨ **Kozmetikë** | Skanon shampon/krem → zbulon paraben, SLS, formaldehyde, triclosan, phthalate |
+| 🥗 **Ushqim** | Skanon barkodin → NutriScore, 11 vitamina & 11 minerale me % RDA, alergjenët, përbërësit, aditivë me risk, grupi NOVA, etiketa (BIO/vegan), alternativa më të shëndetshme, historiku |
+| 🐾 **Kafshë** | Skanon barkodin me kamerë → skor sipas proteinave, karbohidrateve dhe aditivëve |
+| ✨ **Kozmetikë** | Skanon me kamerë shampon/krem → zbulon paraben, SLS, formaldehyde, triclosan, phthalate |
 | 🤖 **Asistenti** | Pyet në shqip për ushqimin, etiketat, alergjitë dhe dietat |
 | 🧾 **Faturë** | Foto e faturës → produktet nxirren dhe vlerësohen një nga një |
 | 💊 **Barnat** | Informacion bazë: përdorimi, dozimi, efektet anësore, ndërveprimet |
@@ -43,7 +43,7 @@ Aplikacion React Native (Expo) që skanon produkte ushqimore, kozmetikë dhe ush
 
 ### Si funksionon pikëzimi
 
-Skori **0–100** bazohet në NutriScore kur ai ekziston (`a`=92, `b`=72, `c`=50, `d`=28, `e`=10); përndryshe llogaritet nga vlerat për 100 g — sheqeri, yndyra e ngopur dhe kripa e ulin, ndërsa fibrat dhe proteinat e rrisin. I njëjti parim përdoret për kozmetikën (përbërës të rrezikshëm) dhe ushqimin e kafshëve (proteinat dhe aditivët).
+Skori **0–100** bazohet në NutriScore kur ai ekziston (`a`=92, `b`=72, `c`=50, `d`=28, `e`=10); përndryshe llogaritet nga vlerat për 100 g — sheqeri, yndyra e ngopur dhe kripa e ulin, ndërsa fibrat dhe proteinat e rrisin. Pastaj, **si te Yuka**, aditivët e rrezikshëm ulin pikët (deri në −21, sipas niveleve në `src/lib/productInfo.js`) dhe etiketa BIO i shton +5. I njëjti parim përdoret për kozmetikën (përbërës të rrezikshëm) dhe ushqimin e kafshëve (proteinat dhe aditivët).
 
 ---
 
@@ -85,9 +85,9 @@ Shendet-mobile/
 ├── eas.json.example            # Konfigurimi EAS (build në cloud) — shembull
 ├── src/
 │   ├── screens/                # Të gjitha ekranet
-│   │   ├── FoodScreen.js       # Skanim ushqimi + vitamina/minerale + historik
-│   │   ├── AnimalFoodScreen.js # Ushqim për kafshë
-│   │   ├── CosmeticsScreen.js  # Kozmetikë (përbërës të rrezikshëm)
+│   │   ├── FoodScreen.js       # Skanim ushqimi + aditivë/NOVA/alternativa + historik
+│   │   ├── AnimalFoodScreen.js # Ushqim për kafshë (me skaner 📷)
+│   │   ├── CosmeticsScreen.js  # Kozmetikë (përbërës të rrezikshëm, me skaner 📷)
 │   │   ├── SkanimFature.tsx    # Foto e faturës → analizë AI
 │   │   ├── ModuliBarnas.tsx    # Barnat & ilaçet
 │   │   ├── HartaProdukteve.tsx # Prodhues vendorë
@@ -99,17 +99,14 @@ Shendet-mobile/
 │   │   └── HistoryPanel.js     # Paneli i historikut
 │   ├── lib/
 │   │   ├── ollama.ts           # Klienti Ollama (AI lokale)
-│   │   └── aiFallback.ts       # Përgjigje lokale kur AI nuk është aktiv
+│   │   ├── aiFallback.ts       # Përgjigje lokale kur AI nuk është aktiv
+│   │   └── productInfo.js      # Aditivë me risk, NOVA, etiketa, alternativa
 │   └── utils/
 │       └── storage.js          # AsyncStorage: historia e kërkimeve
 ├── scripts/
 │   ├── ollama-setup.ps1        # Instalon/konfiguron Ollama
-│   └── ollama-check.js         # Test i shpejtë i Ollama
-└── web/                        # PWA legacy (jo e nevojshme për aplikacionin)
-    ├── index.html
-    ├── manifest.json
-    ├── service-worker.js
-    └── YukaShqip.jsx           # Referencë e vjetër (React për web)
+│   ├── ollama-check.js         # Test i shpejtë i Ollama
+│   └── make_icons.py           # Gjeneron ikonat cartoon në assets/ (PIL)
 ```
 
 ---
@@ -174,9 +171,9 @@ Për pajisje fizike, Ollama duhet të dëgjojë në rrjet:
 
 | Tab i dukshëm | Skedari | Çfarë bën |
 |---|---|---|
-| 🥗 Ushqim | `src/screens/FoodScreen.js` | Barkod → Open Food Facts; vitamina/minerale, NutriScore, historik, skaner |
-|  Kafshë | `src/screens/AnimalFoodScreen.js` | Barkod → ushqim për kafshë, skor sipas proteinave/aditivëve |
-| ✨ Kozmetikë | `src/screens/CosmeticsScreen.js` | Barkod → përbërës të rrezikshëm (paraben, SLS, etj.) |
+| 🥗 Ushqim | `src/screens/FoodScreen.js` | Barkod → Open Food Facts; vitamina/minerale, NutriScore, aditivë, NOVA, etiketa, alternativa, historik, skaner |
+|  Kafshë | `src/screens/AnimalFoodScreen.js` | Barkod → ushqim për kafshë, skor sipas proteinave/aditivëve, skaner 📷 |
+| ✨ Kozmetikë | `src/screens/CosmeticsScreen.js` | Barkod → përbërës të rrezikshëm (paraben, SLS, etj.), skaner 📷 |
 | 🤖 Asistenti | `src/screens/AsistentAI.tsx` | Bisedë me Ollama; pa server kthen përgjigje lokale |
 | ➕ Më shumë | `src/screens/Menu.tsx` | Hyrje për modulet dytësore |
 
@@ -193,9 +190,10 @@ Për pajisje fizike, Ollama duhet të dëgjojë në rrjet:
 App.js
  └── src/screens/*  ──> src/lib/ollama.ts        (AI lokale)
                    ──> src/lib/aiFallback.ts     (kur Ollama mungon)
+                   ──> src/lib/productInfo.js    (aditivë, NOVA, etiketa, alternativa)
                    ──> src/utils/storage.js      (AsyncStorage)
                    ──> src/components/HistoryPanel.js
-                   ──> src/components/BarcodeScanner.js  (FoodScreen, butoni 📷)
+                   ──> src/components/BarcodeScanner.js  (Ushqim, Kafshë, Kozmetikë)
 ```
 
 ---
@@ -260,12 +258,10 @@ Auditimi i plotë i kodit zbuloi probleme që e bënin aplikacionin **të papër
 
 ## Probleme të njohura
 
-1. **Ikona / splash:** dosja `assets/` shtë bosh — Expo përdor ikonën e paracaktuar. Shto `icon.png`, `adaptive-icon.png`, `splash.png` dhe riktheji referencat në `app.json`.
-2. **PWA (`web/`):** dosja `web/icons/` mungon; `web/YukaShqip.jsx` është version i vjetër web (React + CSS inline), jo i lidhur me aplikacionin mobil. Mund të fshihet nëse nuk përdoret.
-3. **`ProfiletFamiljare.tsx`:** importon `AsyncStorage` por profilin e mban vetëm në memorie (nuk ruhet pas mbylljes). Mund të lidhet me `utils/storage.js`.
-4. **Internet:** kërkimi i barkodit kërkon `world.openfoodfacts.org`. Pa internet produktet e reja nuk gjenden; historiku lokal punon gjithsesi.
-5. **Pajisje fizike + Ollama:** kërkon `OLLAMA_HOST=0.0.0.0:11434` dhe portë të hapur në Firewall.
-6. **Emri i paketës:** `al.shendeti.im` (më parë `al.shendet.mobile`) — instalon si aplikacion i veçantë. Riktheje nëse do vazhdimësi.
+1. **`ProfiletFamiljare.tsx`:** importon `AsyncStorage` por profilin e mban vetëm në memorie (nuk ruhet pas mbylljes). Mund të lidhet me `utils/storage.js`.
+2. **Internet:** kërkimi i barkodit kërkon `world.openfoodfacts.org`. Pa internet produktet e reja nuk gjenden; historiku lokal punon gjithsesi.
+3. **Pajisje fizike + Ollama:** kërkon `OLLAMA_HOST=0.0.0.0:11434` dhe portë të hapur në Firewall.
+4. **Emri i paketës:** `al.shendeti.im` (më parë `al.shendet.mobile`) — instalon si aplikacion i veçantë. Riktheje nëse do vazhdimësi.
 
 ---
 
